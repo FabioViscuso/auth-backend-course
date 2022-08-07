@@ -1,18 +1,17 @@
 version: '3'
 services:
   postgres:
-    image: postgres:14
-    container_name: auth-backend-course
+    image: postgres:13
+    container_name: sequelize-course-db
     env_file:
       - .env
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - ${DB_PORT:-5432}:5432
-
   postgres-test:
-    image: postgres:14
-    container_name: auth-backend-course-test
+    image: postgres:13
+    container_name: sequelize-course-test-db
     env_file:
       - .env
     environment:

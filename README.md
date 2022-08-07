@@ -1,7 +1,6 @@
-## Demo backend with PostgreSQL and Sequelize
+# Sequelize course
 
+## Prerequisites
 
-# Prerequisites
-
-- NVM
-- Docker
+* NVM
+* Docker

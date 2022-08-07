@@ -1,45 +1,60 @@
-import { Sequelize } from "sequelize";
-import { registerModels } from "../models";
+import cls from 'cls-hooked';
+import { Sequelize } from 'sequelize';
+import { registerModels } from '../models';
 
 export default class Database {
-    constructor(environment, dbConfig) {
-        this.environment = environment;
-        this.dbConfig = dbConfig;
-        this.isTestEnv = this.environment === 'test';
+  constructor(environment, dbConfig) {
+    this.environment = environment;
+    this.dbConfig = dbConfig;
+    this.isTestEnvironment = this.environment === 'test';
+  }
+
+  async connect() {
+    // Set up the namespace for transactions
+    const namespace = cls.createNamespace('transactions-namespace');
+    Sequelize.useCLS(namespace);
+
+    // Create the connection
+    const { username, password, host, port, database, dialect } =
+      this.dbConfig[this.environment];
+    this.connection = new Sequelize({
+      username,
+      password,
+      host,
+      port,
+      database,
+      dialect,
+      logging: this.isTestEnvironment ? false : console.log,
+    });
+
+    // Check if we connected successfully
+    await this.connection.authenticate({ logging: false });
+
+    if (!this.isTestEnvironment) {
+      console.log(
+        'Connection to the database has been established successfully'
+      );
     }
 
-    //
-    getConnectionString() {
-        const { username, password, host, port, database } = this.dbConfig[this.environment];
-        return `postgres://${username}:${password}@${host}:${port}/${database}`;
+    // Register the models
+    registerModels(this.connection);
+
+    // Sync the models
+    await this.sync();
+  }
+
+  async disconnect() {
+    await this.connection.close();
+  }
+
+  async sync() {
+    await this.connection.sync({
+      logging: false,
+      force: this.isTestEnvironment,
+    });
+
+    if (!this.isTestEnvironment) {
+      console.log('Connection synced successfully');
     }
-
-    async syncDB() {
-        await this.connection.sync({
-            force: this.isTestEnv ? true : false,
-            logging: false
-        });
-    }
-
-    async disconnectDB() {
-        await this.connection.close();
-    }
-
-    async connectToDB() {
-        const connectionURI = this.getConnectionString()
-        // new sequelize instance, costructed from 'uri' option
-        this.connection = new Sequelize(connectionURI, { logging: this.isTestEnv ? false : console.log });
-        // attempt a connection
-        await this.connection.authenticate({ logging: false });
-        // log a success message if not in test mode
-        if (!this.isTestEnv) {
-            console.log('Connection to DB successful');
-        };
-
-        // register models
-        registerModels(this.connection)
-
-        // sync models
-        await syncDB();
-    }
+  }
 }
