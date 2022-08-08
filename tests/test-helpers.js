@@ -1,4 +1,3 @@
-import "../src/config";
 import Database from "../src/database";
 import dbConfig from "../src/config/database"
 
@@ -15,7 +14,7 @@ class TestsHelpers {
         db.disconnect();
     }
 
-    static syncDb() {
+    static async syncDb() {
         await db.sync();
     }
 }

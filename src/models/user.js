@@ -7,10 +7,10 @@ export default (sequelize) => {
         static associate(models) {
 
         }
-        async hashPassword(password) {
+        static async hashPassword(password) {
             return bcrypt.hash(password, environment.saltRounds)
         }
-        async comparePasswords(password, hashedPassword) {
+        static async comparePasswords(password, hashedPassword) {
             return bcrypt.compare(password, hashedPassword)
         }
     }
@@ -54,9 +54,9 @@ export default (sequelize) => {
         indexes: [{ unique: true, fields: ['email', 'username'] }]
     });
 
-    User.beforeSave(async (user) => {
-        const hashedPassword = user.hashPassword(user.password);
-        user.password = hashedPassword;
+    User.beforeSave(async (passedUser, options) => {
+        const hashedPassword = await User.hashPassword(passedUser.password);
+        passedUser.password = hashedPassword;
     })
 
     return User;
