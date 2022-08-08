@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
-import { env } from "../config/env";
+import environment from "../config/environment";
 
 export const passwordUtils = {
     async hashPassword(password) {
-        return bcrypt.hash(password, env.SALT_ROUNDS)
+        return bcrypt.hash(password, environment.saltRounds)
     },
     async comparePasswords(password, hashedPassword) {
         return bcrypt.compare(password, hashedPassword)
